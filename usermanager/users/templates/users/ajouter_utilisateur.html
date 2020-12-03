@@ -1,0 +1,70 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/date.css'%}">
+<script src="{% static 'js/date.js'  %}"></script>
+
+<div class="container">
+    <h2 class="text-center">Ajouter un utilisateur</h2>
+    <div>
+        <form action="/adduser" method="post">
+            <div class="form-group">
+                <label for="prenom">Prenom</label>
+                <input required type="text" class="form-control" placeholder="Veuillez entrer votre prenom" id="prenom"
+                    name="prenom">
+            </div>
+            <div class="form-group">
+                <label for="nom">Nom</label>
+                <input required type="text" class="form-control" placeholder="Veuillez entrer votre nom" id="nom"
+                    name="nom">
+            </div>
+            <div class="form-group">
+                <label for="phone">Identifiant</label>
+                <input required type="text" class="form-control"
+                    placeholder="Veuillez entrer votre numero de Identifiant" id="identifiant" name="identifiant">
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input required type="email" class="form-control" placeholder="Veuillez entrer votre e-mail" id="email"
+                    name="email">
+            </div>
+            
+            
+                <label for="date">Date</label>
+                 
+                <div class="row">
+                        <!-- Date Picker Input -->
+                        <div class="form-group mb-4">
+                            <div class="datepicker date input-group p-0 shadow-sm">
+                                <input type="text" placeholder="Choose a reservation date" class="form-control py-4 px-4" id="reservationDate">
+                                <div class="input-group-append"><span class="input-group-text px-4"><i class="fa fa-clock-o"></i></span></div>
+                            </div>
+                        </div><!-- DEnd ate Picker Input -->
+            
+                           </div>
+            <div class="form-group">
+                <label for="mot de passe">Mot de passe</label>
+                <input required type="password" class="form-control" placeholder="Veuillez entrer votre mot de passe"
+                    id="mot de passe" name="mot de passe">
+            </div>
+            <div class="form-group">
+                <label for="confirmation">Confirmation</label>
+                <input required type="password" class="form-control" placeholder="Veuillez confirmer votre mot de passe"
+                    id="confirmation" name="confirmation">
+            </div>
+
+            <div class="form-group">
+                <label for="adresse">type de profile</label>
+
+                <select class=form-control>
+                    <option value="vendeur">vendeur</option>
+                    <option value="client">client</option>
+                </select>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
