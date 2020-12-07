@@ -1,2 +1,3 @@
 venv/
 usermanager/__pycache__/
+usermanager/users/__pycache__/
