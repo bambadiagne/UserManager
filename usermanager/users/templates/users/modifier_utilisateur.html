@@ -1,0 +1,82 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/date.css'%}">
+<script src="{% static 'js/date.js'  %}"></script>
+
+<div class="container">
+    <h2 class="text-center">Modifier l'utilisateur {{id}} </h2>
+    <div>
+        <form action="/users/modifier/{{id}}" method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+            {% for field in form %}
+
+            {% for error in field.errors %}
+            {{field.label}}: {{ error|escape }}
+            {% endfor %}
+
+            {% endfor %}
+            {% endif %}
+            <div class="form-group">
+                <label for="prenom">Prenom</label>
+                <input required type="text" class="form-control" placeholder="{{client.prenom}}" id="prenom"
+                    name="prenom">
+            </div>
+            <div class="form-group">
+                <label for="nom">Nom</label>
+                <input required type="text" class="form-control" placeholder="{{client.nom}}" id="nom"
+                    name="nom">
+            </div>
+            <div class="form-group">
+                <label for="phone">Identifiant</label>
+                <input required type="text" class="form-control"
+                    placeholder="{{client.identifiant}}" id="identifiant" name="identifiant">
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input required type="email" class="form-control" placeholder="{{client.email}}" id="email"
+                    name="email">
+            </div>
+
+
+            <label for="date">Date</label>
+
+            <div class="row">
+                <!-- Date Picker Input -->
+                <div class="form-group mb-4">
+                    <div class="datepicker date input-group p-0 shadow-sm">
+                        <input type="text" placeholder="{{client.date}}" class="form-control py-4 px-4"
+                            id="reservationDate" name='date'>
+                        <div class="input-group-append"><span class="input-group-text px-4"><i
+                                    class="fa fa-clock-o"></i></span></div>
+                    </div>
+                </div><!-- DEnd ate Picker Input -->
+
+            </div>
+            <div class="form-group">
+                <label for="mot_de_passe">Mot de passe</label>
+                <input required type="password" class="form-control" placeholder="{{client.mot_de_passe}}"
+                    id="mot_de_passe" name="mot_de_passe">
+            </div>
+            <div class="form-group">
+                <label for="confirmation">Confirmation</label>
+                <input required type="password" class="form-control" placeholder="Veuillez confirmer votre mot de passe"
+                    id="confirmation" name="confirmation">
+            </div>
+
+            <div class="form-group">
+                <label for="adresse">type de profile</label>
+
+                <select name='profile' aria-placeholder="{{client.profile}}" class=form-control>
+                    <option value="vendeur">vendeur</option>
+                    <option value="client">client</option>
+                </select>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
