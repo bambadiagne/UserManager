@@ -7,7 +7,17 @@
 <div class="container">
     <h2 class="text-center">Ajouter un utilisateur</h2>
     <div>
-        <form action="/adduser" method="post">
+        <form action="/users/clients" method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+            {% for field in form %}
+
+            {% for error in field.errors %}
+            {{field.label}}: {{ error|escape }}
+            {% endfor %}
+
+            {% endfor %}
+            {% endif %}
             <div class="form-group">
                 <label for="prenom">Prenom</label>
                 <input required type="text" class="form-control" placeholder="Veuillez entrer votre prenom" id="prenom"
@@ -28,24 +38,26 @@
                 <input required type="email" class="form-control" placeholder="Veuillez entrer votre e-mail" id="email"
                     name="email">
             </div>
-            
-            
-                <label for="date">Date</label>
-                 
-                <div class="row">
-                        <!-- Date Picker Input -->
-                        <div class="form-group mb-4">
-                            <div class="datepicker date input-group p-0 shadow-sm">
-                                <input type="text" placeholder="Choose a reservation date" class="form-control py-4 px-4" id="reservationDate">
-                                <div class="input-group-append"><span class="input-group-text px-4"><i class="fa fa-clock-o"></i></span></div>
-                            </div>
-                        </div><!-- DEnd ate Picker Input -->
-            
-                           </div>
+
+
+            <label for="date">Date</label>
+
+            <div class="row">
+                <!-- Date Picker Input -->
+                <div class="form-group mb-4">
+                    <div class="datepicker date input-group p-0 shadow-sm">
+                        <input type="text" placeholder="Choose a reservation date" class="form-control py-4 px-4"
+                            id="reservationDate" name='date'>
+                        <div class="input-group-append"><span class="input-group-text px-4"><i
+                                    class="fa fa-clock-o"></i></span></div>
+                    </div>
+                </div><!-- DEnd ate Picker Input -->
+
+            </div>
             <div class="form-group">
-                <label for="mot de passe">Mot de passe</label>
+                <label for="mot_de_passe">Mot de passe</label>
                 <input required type="password" class="form-control" placeholder="Veuillez entrer votre mot de passe"
-                    id="mot de passe" name="mot de passe">
+                    id="mot_de_passe" name="mot_de_passe">
             </div>
             <div class="form-group">
                 <label for="confirmation">Confirmation</label>
@@ -56,7 +68,7 @@
             <div class="form-group">
                 <label for="adresse">type de profile</label>
 
-                <select class=form-control>
+                <select name='profile' class=form-control>
                     <option value="vendeur">vendeur</option>
                     <option value="client">client</option>
                 </select>

@@ -5,7 +5,7 @@ urlpatterns = [
     path('vendeurs',views.afficher_vendeurs,name='vendeurs'),
     path('clients',views.afficher_clients,name='clients'),
     path('ajouter',views.ajouter_utilisateur,name='addUser'),
-    path('modifier/<int:id>', views.modifier_utilisateur, name = 'modifyUser'),
-    path('delete/<int:id>', views.supprimer_utilisateur, name = 'deleteUser'),
+    path('modifier/<str:id>', views.modifier_utilisateur, name = 'modifyUser'),
+    path('delete/<str:id>', views.supprimer_utilisateur, name = 'deleteUser'),
     
 ]

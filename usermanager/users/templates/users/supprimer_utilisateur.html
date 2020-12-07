@@ -1,0 +1,8 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+   <h1 class="d-flex justify-content-center">Confirmez-vous la suppression de l’utilisateur {{id}}</h1>
+   <span> 
+   <a href="/users/clients" class="btn btn-danger">Confirmer</a>
+    <a href="/" class="btn btn-primary">Annuler</a>
+</span>
+   {% endblock  %}
