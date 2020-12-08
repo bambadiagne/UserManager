@@ -9,6 +9,8 @@
     <div>
         <form action="/users/clients" method="post">
             {% csrf_token %}
+            
+            {{password_error}}
             {% if form.errors %}
             {% for field in form %}
 
