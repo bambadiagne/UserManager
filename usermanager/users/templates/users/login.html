@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+{{password_error}}
+{% if form.errors %}
+{% for field in form %}
+
+{% for error in field.errors %}
+{{field.label}}: {{ error|escape }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+<center>
+    <div class="container">
+        <br<br><br><br>
+            <form action="/api/login" method="post">
+                {% csrf_token %}
+                <span style="color: red;">{{message}}</span>
+                <div class="form-group ">
+                    <label for="username">Username</label>
+                    <input required type="text" class="form-control col-6" placeholder="Veuillez entrer votre username"
+                        id="username" name="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input required type="password" class="form-control col-6"
+                        placeholder="Veuillez entrer votre password" id="password" name="password">
+                </div>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
+</center>
+{% endblock %}

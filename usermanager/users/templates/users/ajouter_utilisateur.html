@@ -7,7 +7,12 @@
 <div class="container">
     <h2 class="text-center">Ajouter un utilisateur</h2>
     <div>
-        <form action="/users/clients" method="post">
+        {%  if status %}
+        <div class="alert alert-success" role="alert">
+            Compte cree avec succès
+          </div>
+        {% endif %}
+        <form action="/api/register" method="post">
             {% csrf_token %}
             
             {{password_error}}
@@ -71,7 +76,7 @@
                 <label for="adresse">type de profile</label>
 
                 <select name='profile' class=form-control>
-                    <option value="vendeur">vendeur</option>
+                    <option value="seller">seller</option>
                     <option value="client">client</option>
                 </select>
 
