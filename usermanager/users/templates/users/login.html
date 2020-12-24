@@ -16,6 +16,11 @@
 <center>
     <div class="container">
         <br<br><br><br>
+        {%  if status %}
+        <div class="alert alert-success" role="alert">
+            Compte cree avec succès
+          </div>
+        {% endif %}
             <form action="/api/login" method="post">
                 {% csrf_token %}
                 <span style="color: red;">{{message}}</span>
