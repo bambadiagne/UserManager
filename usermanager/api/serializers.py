@@ -10,5 +10,9 @@ class TicketSerializer(serializers.HyperlinkedModelSerializer):
 class ClientSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model=Client
-        fields=["solde","total_spent"]
+        fields=["balance","total_spent"]
 
+class SellerSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model=Seller
+        fields=["gain"]
