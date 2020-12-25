@@ -32,7 +32,7 @@ class Bill(models.Model):
     client=models.ForeignKey('Client',on_delete=models.CASCADE)
     seller=models.ForeignKey('Seller',on_delete=models.CASCADE)
 
-def isSellerOrClient(id):
+def is_seller_or_client(id):
     client=Client()
     try:
          client=Client.objects.get(user_id=id) 

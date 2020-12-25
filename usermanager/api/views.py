@@ -1,16 +1,15 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.hashers import make_password, check_password
-from .models import Seller, Bill, Client, Ticket, isSellerOrClient
-from .serializers import ClientSerializer, SellerSerializer, TicketSerializer
+from .models import Seller, Bill, Client, Ticket, is_seller_or_client
+from .serializers import BillSerializer, ClientSerializer, SellerSerializer, TicketSerializer
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view
-
+from django.db.models import F
 import datetime
 # Create your views here.
 
@@ -26,8 +25,6 @@ def register(request):
         prenom = request.POST.get('prenom')
         username = request.POST.get('identifiant')
         email = request.POST.get('email')
-        date_naissance = datetime.date(
-            date_birth[2], date_birth[1], date_birth[0])
         mot_de_passe = make_password(request.POST.get('mot_de_passe'))
 
         if(request.POST.get('profile') == "seller"):
@@ -77,13 +74,75 @@ def login(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def getInfoUser(request, id):
-    user = isSellerOrClient(id)
+def get_info_user(request, id):
+    user = is_seller_or_client(id)
     if(user[0] == "client"):
         return Response(ClientSerializer(user[1]).data, status=status.HTTP_200_OK)
     elif(user[0] == "seller"):
         return Response(SellerSerializer(user[1]).data, status=status.HTTP_200_OK)
     return Response({"message": "Aucun utilisateur trouvé"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+def get_all_client_bill(request):
+    token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+    user_id = Token.objects.filter(key=token_key).first().user_id
+    user = is_seller_or_client(user_id)
+    if(user[0] == "client"):
+        all_bill = Bill.objects.filter(client_id=user[1].id)
+        if(all_bill):
+            return Response(BillSerializer(all_bill, many=True).data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Vous n'avez pas de factures"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"message": "Connectez-vous etant que client!!!"}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["GET"])
+def get_single_client_bill(request, id):
+    token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+    user_id = Token.objects.filter(key=token_key).first().user_id
+    user = is_seller_or_client(user_id)
+    if(user[0] == "client"):
+        try:
+            bill = Bill.objects.get(id=id)
+        except Bill.DoesNotExist:
+            bill = None
+        if(bill):
+            return Response(BillSerializer(bill).data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Facture inexistante"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({"message": "Connectez-vous etant que client"}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def buy_ticket(request, id):
+    token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+    user_id = Token.objects.filter(key=token_key).first().user_id
+
+    user = is_seller_or_client(user_id)
+    if(user[0] == "client"):
+        number = int(request.POST.get('number'))
+        client_ticket = Ticket.objects.get(pk=id)
+        if(client_ticket):
+            if(client_ticket.available_places >= int(number)):
+                total_price = client_ticket.price*number
+                Bill.objects.create(
+                    total_paid=total_price, client_id=user[1].id, seller_id=client_ticket.seller_id, ticket_id=client_ticket.id)
+                Client.objects.filter(id=user[1].id).update(
+                    balance=F("balance")-total_price, total_spent=F("total_spent")+total_price)
+                Seller.objects.filter(id=client_ticket.seller_id).update(
+                    gain=F("gain")+0.12*total_price)
+                Ticket.objects.filter(id=id).update(
+                    available_places=F("available_places")-number)
+                return Response({"message": "Billet(s) achetés avec succès"}, status=status.HTTP_200_OK)
+
+            else:
+                return Response({"message": "Nombre de tickets insuffisants"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({"message": "Un billet ne peut qu'etre acheté par un client"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class TicketViewSet(viewsets.ViewSet):
@@ -92,9 +151,9 @@ class TicketViewSet(viewsets.ViewSet):
     def list(self, request):
         token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
         user_id = Token.objects.filter(key=token_key).first().user_id
-        
-        user = isSellerOrClient(user_id)
-          
+
+        user = is_seller_or_client(user_id)
+
         if(user[0] == "client"):
             try:
                 client_tickets = Ticket.objects.filter(available_places__gt=0)
@@ -108,31 +167,71 @@ class TicketViewSet(viewsets.ViewSet):
             except Ticket.DoesNotExist:
                 seller_tickets = None
             if(seller_tickets):
-        
+
                 return Response(TicketSerializer(seller_tickets, many=True).data, status=status.HTTP_200_OK)
 
         return Response({"message": "Billets non disponibles"}, status=status.HTTP_404_NOT_FOUND)
-    def retrieve(self, request,pk):
-        
+
+    def retrieve(self, request, pk):
+
         token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
         user_id = Token.objects.filter(key=token_key).first().user_id
-        
-        user=isSellerOrClient(user_id)
-        print(pk)
-        print(user)
-        if(user[0]=="client"):
+        user = is_seller_or_client(user_id)
+        if(user[0] == "client"):
             try:
-                client_ticket=Ticket.objects.get(id=pk)
+                client_ticket = Ticket.objects.get(id=pk)
                 print(client_ticket)
             except Ticket.DoesNotExist:
-                return Response({"message":"Billet non trouvé"},status=status.HTTP_404_NOT_FOUND)
-            ticket_serializer=TicketSerializer(client_ticket)
-            return Response(ticket_serializer.data,status=status.HTTP_200_OK)    
-        if(user[0]=="seller"):
+                return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
+            ticket_serializer = TicketSerializer(client_ticket)
+            return Response(ticket_serializer.data, status=status.HTTP_200_OK)
+        if(user[0] == "seller"):
             try:
-                seller_ticket=Ticket.objects.get(seller_id=user[1].id,id=pk)
+                seller_ticket = Ticket.objects.get(seller_id=user[1].id, id=pk)
                 print(seller_ticket)
             except Ticket.DoesNotExist:
-                return Response({"message":"Billet non trouvé"},status=status.HTTP_404_NOT_FOUND)
-            ticket_serializer=TicketSerializer(seller_ticket)
-            return Response(ticket_serializer.data,status=status.HTTP_200_OK)        
+                return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
+            ticket_serializer = TicketSerializer(seller_ticket)
+            return Response(ticket_serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+        user_id = Token.objects.filter(key=token_key).first().user_id
+
+        user = is_seller_or_client(user_id)
+        if(user[0] == "seller"):
+            if(request.method == "POST"):
+                if(request.POST.get('date')):
+                    origin = request.POST.get("origin")
+                    destination = request.POST.get("destination")
+                    date_birth = [int(i)
+                                  for i in request.POST.get('date').split("/")]
+                    date = datetime.date(
+                        date_birth[2], date_birth[1], date_birth[0])
+                    time = request.POST.get("time")
+                    total_places = request.POST.get("total_places")
+                    available_places = request.POST.get("available_places")
+                    price = request.POST.get("price")
+                    if(origin and destination and price and total_places and available_places and time):
+                        if(total_places.isdigit() and available_places.isdigit()):
+                            if(time.upper() in ["AM", "PM"]):
+                                Ticket.objects.create(origin=origin, destination=destination, date=date, time=time,
+                                                      total_places=total_places, available_places=available_places, price=price, seller_id=user[1].id)
+                                return Response({"message": "Billet crée avec succès"},
+                                                status=status.HTTP_200_OK)
+                            else:
+                                return Response({"message":"La valeur de time doit etre AM ou PM"},status=status.HTTP_404_NOT_FOUND)                    
+                        else:
+                            return Response({"message": "total_places et available_places ne sont pas des nombres"}, status=status.HTTP_404_NOT_FOUND)
+                    else:
+                        return Response({"message": "Formulaire invalide:Un de vos champs est nul"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Impossible,Vous n'etes pas vendeur"}, status=status.HTTP_403_FORBIDDEN)
+
+    def list(self, request):
+        token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+        user_id = Token.objects.filter(key=token_key).first().user_id
+
+        user = is_seller_or_client(user_id)
+        if(user[0] == "seller"):
+                pass

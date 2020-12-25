@@ -1,6 +1,6 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import Ticket,Client,Seller
+from .models import Ticket,Client,Seller,Bill
 
 class TicketSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -16,3 +16,7 @@ class SellerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model=Seller
         fields=["gain"]
+class BillSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model=Bill
+        fields=["total_paid"]
