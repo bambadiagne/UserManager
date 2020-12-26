@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from .models import Seller, Bill, Client, Ticket, is_seller_or_client
 from .serializers import BillSerializer, ClientSerializer, SellerSerializer, TicketSerializer
+from re import match
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework import status, viewsets
@@ -25,26 +26,46 @@ def register(request):
         prenom = request.POST.get('prenom')
         username = request.POST.get('identifiant')
         email = request.POST.get('email')
-        mot_de_passe = make_password(request.POST.get('mot_de_passe'))
+        mot_de_passe = request.POST.get('mot_de_passe')
 
-        if(request.POST.get('profile') == "seller"):
-            user = User(password=mot_de_passe, username=username, last_name=nom,
-                        email=email, first_name=prenom,)
-            user.save()
-            seller = Seller(user=user, date_naissance=datetime.date(
-                date_birth[2], date_birth[1], date_birth[0]), gain=0)
-            seller.save()
-            return render(request, "users/ajouter_utilisateur.html", {'status': True})
-        elif(request.POST.get('profile') == "client"):
-            user = User(password=mot_de_passe, username=username, last_name=nom,
-                        email=email, first_name=prenom,)
-            user.save()
+        if(nom and prenom and username and email and mot_de_passe):
+            if(match(r"[^@]+@[^@]+\.[^@]+", email)):
+                if(len(mot_de_passe) >= 8):
+                    already_exists = User.objects.filter(
+                        username=username).first()
+                    if(request.POST.get('profile') == "seller"):
+                        if(already_exists):
+                            return render(request, "users/ajouter_utilisateur.html", {"message": "Utilisateur deja existant", 'status': False})
+                        mot_de_passe = make_password(mot_de_passe)
+                        user = User(password=mot_de_passe, username=username, last_name=nom,
+                                    email=email, first_name=prenom,)
+                        user.save()
+                        seller = Seller(user=user, date_naissance=datetime.date(
+                            date_birth[2], date_birth[1], date_birth[0]), gain=0)
+                        seller.save()
+                        return render(request, "users/ajouter_utilisateur.html", {'status': True})
+                    elif(request.POST.get('profile') == "client"):
+                        if(already_exists):
+                            return render(request, "users/ajouter_utilisateur.html", {"message": "Utilisateur deja existant", 'status': False})
+                        mot_de_passe = make_password(mot_de_passe)
+                        user = User(password=mot_de_passe, username=username, last_name=nom,
+                                    email=email, first_name=prenom)
+                        user.save()
 
-            client = Client(user=user, date_naissance=datetime.date(
-                date_birth[2], date_birth[1], date_birth[0]), balance=0, total_spent=0)
-            client.save()
+                        client = Client(user=user, date_naissance=datetime.date(
+                            date_birth[2], date_birth[1], date_birth[0]), balance=0, total_spent=0)
+                        client.save()
 
-            return render(request, "users/ajouter_utilisateur.html", {'status': True})
+                        return render(request, "users/ajouter_utilisateur.html", {'status': True, 'message': "Compte cree avec succès"})
+                    else:
+                        return render(request, "users/ajouter_utilisateur.html", {"message": "Profile inconnu", "status": "False"})
+                else:
+                    return render(request, "users/ajouter_utilisateur.html", {"message": "La longueur du mot de passe doit etre superieur ou egale à 8", "status": False})
+            else:
+                return render(request, "users/ajouter_utilisateur.html",
+                       {"message": "Format d'email non valide", "status": False})
+        else:
+            return render(request, "users/ajouter_utilisateur.html", {"message": "Un de vos champs est nul", "status": False})
 
 
 @api_view(["GET", "POST"])
@@ -142,7 +163,7 @@ def buy_ticket(request, id):
             else:
                 return Response({"message": "Nombre de tickets insuffisants"}, status=status.HTTP_404_NOT_FOUND)
     else:
-        return Response({"message": "Un billet ne peut qu'etre acheté par un client"}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"message": "Un billet ne peut qu'etre acheté par un client"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class TicketViewSet(viewsets.ViewSet):
@@ -180,7 +201,6 @@ class TicketViewSet(viewsets.ViewSet):
         if(user[0] == "client"):
             try:
                 client_ticket = Ticket.objects.get(id=pk)
-                print(client_ticket)
             except Ticket.DoesNotExist:
                 return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
             ticket_serializer = TicketSerializer(client_ticket)
@@ -188,7 +208,6 @@ class TicketViewSet(viewsets.ViewSet):
         if(user[0] == "seller"):
             try:
                 seller_ticket = Ticket.objects.get(seller_id=user[1].id, id=pk)
-                print(seller_ticket)
             except Ticket.DoesNotExist:
                 return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
             ticket_serializer = TicketSerializer(seller_ticket)
@@ -220,18 +239,62 @@ class TicketViewSet(viewsets.ViewSet):
                                 return Response({"message": "Billet crée avec succès"},
                                                 status=status.HTTP_200_OK)
                             else:
-                                return Response({"message":"La valeur de time doit etre AM ou PM"},status=status.HTTP_404_NOT_FOUND)                    
+                                return Response({"message": "La valeur de time doit etre AM ou PM"}, status=status.HTTP_404_NOT_FOUND)
                         else:
                             return Response({"message": "total_places et available_places ne sont pas des nombres"}, status=status.HTTP_404_NOT_FOUND)
                     else:
                         return Response({"message": "Formulaire invalide:Un de vos champs est nul"}, status=status.HTTP_404_NOT_FOUND)
         else:
-            return Response({"message": "Impossible,Vous n'etes pas vendeur"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "Impossible,Vous n'etes pas vendeur"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def list(self, request):
+    def destroy(self, request, pk):
         token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
         user_id = Token.objects.filter(key=token_key).first().user_id
 
         user = is_seller_or_client(user_id)
         if(user[0] == "seller"):
-                pass
+            try:
+                ticket_deleted = Ticket.objects.get(id=pk)
+            except Ticket.DoesNotExist:
+                return Response({"message": "Ce billet n'existe pas"}, status=status.HTTP_404_NOT_FOUND)
+            ticket_deleted.delete()
+            return Response({"message": "Le billet a été bien supprimé"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Impossible,Vous n'etes pas vendeur"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def update(self, request, pk):
+        token_key = request.META["HTTP_AUTHORIZATION"].split(" ")[1]
+        user_id = Token.objects.filter(key=token_key).first().user_id
+
+        user = is_seller_or_client(user_id)
+        if(user[0] == "seller"):
+            try:
+                Ticket.objects.get(id=pk)
+            except Ticket.DoesNotExist:
+                return Response({"message": "Ce billet n'existe pas"}, status=status.HTTP_404_NOT_FOUND)
+            if(request.POST.get('date')):
+                origin = request.POST.get("origin")
+                destination = request.POST.get("destination")
+                date_birth = [int(i)
+                              for i in request.POST.get('date').split("/")]
+                date = datetime.date(
+                    date_birth[2], date_birth[1], date_birth[0])
+                time = request.POST.get("time")
+                total_places = request.POST.get("total_places")
+                available_places = request.POST.get("available_places")
+                price = request.POST.get("price")
+                if(origin and destination and price and total_places and available_places and time):
+                    if(total_places.isdigit() and available_places.isdigit()):
+                        if(time.upper() in ["AM", "PM"]):
+                            Ticket.objects.update(origin=origin, destination=destination, date=date, time=time,
+                                                  total_places=total_places, available_places=available_places, price=price, seller_id=user[1].id)
+                            return Response({"message": "Billet mis à jour avec succès"},
+                                            status=status.HTTP_200_OK)
+                        else:
+                            return Response({"message": "La valeur de time doit etre AM ou PM"}, status=status.HTTP_404_NOT_FOUND)
+                    else:
+                        return Response({"message": "total_places et available_places ne sont pas des nombres"}, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    return Response({"message": "Formulaire invalide:Un de vos champs est nul"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"message": "Impossible,Vous n'etes pas vendeur"}, status=status.HTTP_401_UNAUTHORIZED)

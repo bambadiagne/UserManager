@@ -34,12 +34,12 @@
                 <tbody>
                     {% for client in clients %}
                     <tr>
-                        <td>{{client.nom}}</td>
-                        <td>{{client.prenom}}</td>                        
+                        <td>{{client.first_name}}</td>
+                        <td>{{client.last_name}}</td>                        
                         <td>{{client.email}}</td>
                         <td>
-                            <a href="/users/modifier/{{client.identifiant}}" class="settings" title="Settings" data-toggle="tooltip"><i class="fas fa-user-edit"></i></a>
-                            <a href="/users/confirmer/{{client.identifiant}}" class="delete " title="Delete" data-toggle="tooltip"><i class="fas fa-trash"></i></a>
+                            <a href="/users/modifier/{{client.id}}" class="settings" title="Settings" data-toggle="tooltip"><i class="fas fa-user-edit"></i></a>
+                            <a href="/users/confirmer/{{client.id}}" class="delete " title="Delete" data-toggle="tooltip"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                     <tr>

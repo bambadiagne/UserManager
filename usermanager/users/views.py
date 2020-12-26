@@ -1,12 +1,14 @@
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .models import Utilisateur
 from .forms import UtilisateurForm
 import datetime
-
+from api.models import Seller,Client
 
 def afficher_vendeurs(request):
-    vendeurs = Utilisateur.objects.filter(profile="vendeur")
+    vendeurs = Seller.objects.all()
+    vendeurs=[User.objects.filter(id=vendeur.user_id).first() for vendeur in vendeurs]
     return render(request, "users/vendeurs.html", {'vendeurs': vendeurs})
 
 
@@ -32,8 +34,8 @@ def afficher_clients(request):
 
         else:
             return render(request, "users/ajouter_utilisateur.html", {"form": user_form})
-
-    clients = Utilisateur.objects.filter(profile="client")
+    clients = Client.objects.all()
+    clients=[User.objects.filter(id=vendeur.user_id).first() for vendeur in clients]
     return render(request, "users/clients.html", {'clients': clients})
 
 

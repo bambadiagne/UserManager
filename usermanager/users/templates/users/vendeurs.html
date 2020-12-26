@@ -34,12 +34,13 @@
                 <tbody>
                     {% for vendeur in vendeurs %}
                     <tr>
-                        <td>{{vendeur.nom}}</td>
-                        <td>{{vendeur.prenom}}</td>                        
+                        <td>{{vendeur.last_name}}</td>                        
+                        <td>{{vendeur.first_name}}</td>
+                       
                         <td>{{vendeur.email}}</td>
                         <td>
-                            <a href="/users/modifier/{{vendeur.identifiant}}" class="settings" title="Settings" data-toggle="tooltip"><i class="fas fa-user-edit"></i></a>
-                            <a href="/users/confirmer/{{vendeur.identifiant}}" class="delete " title="Delete" data-toggle="tooltip"><i class="fas fa-trash"></i></a>
+                            <a href="/users/modifier/{{vendeur.id}}" class="settings" title="Settings" data-toggle="tooltip"><i class="fas fa-user-edit"></i></a>
+                            <a href="/users/confirmer/{{vendeur.id}}" class="delete " title="Delete" data-toggle="tooltip"><i class="fas fa-trash"></i></a>
                         </td>
                     </tr>
                     <tr>

@@ -9,22 +9,18 @@
     <div>
         {%  if status %}
         <div class="alert alert-success" role="alert">
-            Compte cree avec succès
-          </div>
+           {{message}}  
+        </div>
+          {%else%}
+          <div class="alert alert-danger" role="alert">
+            {{message}}  
+         </div>
+           
         {% endif %}
         <form action="/api/register" method="post">
             {% csrf_token %}
             
-            {{password_error}}
-            {% if form.errors %}
-            {% for field in form %}
-
-            {% for error in field.errors %}
-            {{field.label}}: {{ error|escape }}
-            {% endfor %}
-
-            {% endfor %}
-            {% endif %}
+            
             <div class="form-group">
                 <label for="prenom">Prenom</label>
                 <input required type="text" class="form-control" placeholder="Veuillez entrer votre prenom" id="prenom"
