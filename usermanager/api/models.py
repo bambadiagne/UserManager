@@ -32,21 +32,5 @@ class Bill(models.Model):
     client=models.ForeignKey('Client',on_delete=models.CASCADE)
     seller=models.ForeignKey('Seller',on_delete=models.CASCADE)
 
-def is_seller_or_client(id):
-    client=Client()
-    try:
-         client=Client.objects.get(user_id=id) 
-    except Client.DoesNotExist:
-        client = None
-    if(client):
-        return ("client",client) 
-    try:
-         seller=Seller.objects.get(user_id=id) 
-    except Seller.DoesNotExist:
-        seller = None
-    if(seller):
-        return ('seller',seller)
-    return "Aucun utilisateur trouvé"
 
-    
     
