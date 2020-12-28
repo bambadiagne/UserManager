@@ -1,4 +1,7 @@
 {
     "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": false,
+    "python.pythonPath": "c:\\Users\\user\\Documents\\Etudes\\L3TDSI\\Khadim_Sauvegarde\\Programmation\\Python\\Django\\UserManager\\venv\\Scripts\\python.exe",
+    "python.linting.pycodestyleEnabled": false,
+    "python.formatting.provider": "yapf"
 }

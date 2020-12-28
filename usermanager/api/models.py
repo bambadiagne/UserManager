@@ -30,7 +30,4 @@ class Bill(models.Model):
     total_paid=models.FloatField()
     ticket=models.ForeignKey('Ticket',on_delete=models.CASCADE)
     client=models.ForeignKey('Client',on_delete=models.CASCADE)
-    seller=models.ForeignKey('Seller',on_delete=models.CASCADE)
-
-
-    
+    seller=models.ForeignKey('Seller',on_delete=models.CASCADE)    

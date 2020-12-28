@@ -60,16 +60,16 @@ def ticket_form_validation(request):
                     return (False,"total_places et available_places doivent être des nombres") 
                 return (False,"Formulaire invalide:Un de vos champs est nul") 
         
-def is_seller_or_client(id):
+def is_seller_or_client(user_id):
     client=Client()
     try:
-         client=Client.objects.get(user_id=id) 
+         client=Client.objects.get(user_id=user_id) 
     except Client.DoesNotExist:
         client = None
     if(client):
         return ("client",client) 
     try:
-         seller=Seller.objects.get(user_id=id) 
+         seller=Seller.objects.get(user_id=user_id) 
     except Seller.DoesNotExist:
         seller = None
     if(seller):

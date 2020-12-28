@@ -142,14 +142,13 @@ class TicketViewSet(viewsets.ViewSet):
                 client_tickets = None
             if(client_tickets):
                 return Response(TicketSerializer(client_tickets, many=True).data, status=status.HTTP_200_OK)
-        elif(user[0] == "seller"):
-            try:
-                seller_tickets = Ticket.objects.filter(seller_id=user[1].id)
-            except Ticket.DoesNotExist:
-                seller_tickets = None
-            if(seller_tickets):
+        try:
+            seller_tickets = Ticket.objects.filter(seller_id=user[1].id)
+        except Ticket.DoesNotExist:
+            seller_tickets = None
+        if(seller_tickets):
 
-                return Response(TicketSerializer(seller_tickets, many=True).data, status=status.HTTP_200_OK)
+            return Response(TicketSerializer(seller_tickets, many=True).data, status=status.HTTP_200_OK)
 
         return Response({"message": "Billets non disponibles"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -163,13 +162,12 @@ class TicketViewSet(viewsets.ViewSet):
                 return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
             ticket_serializer = TicketSerializer(client_ticket)
             return Response(ticket_serializer.data, status=status.HTTP_200_OK)
-        elif(user[0] == "seller"):
-            try:
-                seller_ticket = Ticket.objects.get(seller_id=user[1].id, id=pk)
-            except Ticket.DoesNotExist:
-                return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
-            ticket_serializer = TicketSerializer(seller_ticket)
-            return Response(ticket_serializer.data, status=status.HTTP_200_OK)
+        try:
+            seller_ticket = Ticket.objects.get(seller_id=user[1].id, id=pk)
+        except Ticket.DoesNotExist:
+            return Response({"message": "Billet non trouvé"}, status=status.HTTP_404_NOT_FOUND)
+        ticket_serializer = TicketSerializer(seller_ticket)
+        return Response(ticket_serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         

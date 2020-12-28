@@ -47,11 +47,10 @@ def modifier_utilisateur(request, id):
                             user_form[1]["date_birth"][2], user_form[1]["date_birth"][1], user_form[1]["date_birth"][0]))
                 seller.save()
                 return render(request, "users/vendeurs.html")
-            elif(request.POST.get('profile') == "client"):
-                client = Client(user=user, date_naissance=datetime.date(
+            client = Client(user=user, date_naissance=datetime.date(
                             user_form[1]["date_birth"][2], user_form[1]["date_birth"][1], user_form[1]["date_birth"][0]))
-                client.save()
-                return render(request, "users/clients.html")
+            client.save()
+            return render(request, "users/clients.html")
         return             
         
           
