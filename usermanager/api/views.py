@@ -13,24 +13,22 @@ import datetime
 from .utils import user_form_validation, ticket_form_validation, is_seller_or_client, get_user_by_token
 
 
+@api_view(["POST"])
 def register(request):
 
-    if(request.method == 'GET'):
-        return render(request, "users/ajouter_utilisateur.html", {'status': False})
-    elif(request.method == 'POST'):
+    if(request.method == 'POST'):
         user_form = user_form_validation(request)
         if(user_form[0]):
             user = User(password=make_password(user_form[1]["mot_de_passe"]), username=user_form[1]["username"], last_name=user_form[1]["nom"],
                         email=user_form[1]["email"], first_name=user_form[1]["prenom"])
             user.save()
-
-            if(request.POST.get('profile') == 'seller'):
+            if(request.data["user_form"]['profile'] == 'seller'):
 
                 seller = Seller(user=user, date_naissance=datetime.date(
                     user_form[1]["date_birth"][2], user_form[1]["date_birth"][1], user_form[1]["date_birth"][0]), gain=0)
                 seller.save()
                 return render(request, "users/ajouter_utilisateur.html", {'status': True, 'message': "Compte créé avec succès"})
-            elif(request.POST.get('profile') == "client"):
+            elif(request.data["user_form"]['profile'] == "client"):
 
                 client = Client(user=user, date_naissance=datetime.date(
                     user_form[1]["date_birth"][2], user_form[1]["date_birth"][1], user_form[1]["date_birth"][0]), balance=0, total_spent=0)
@@ -43,12 +41,10 @@ def register(request):
 
 @api_view(["GET", "POST"])
 def login(request):
-    if(request.method == "GET"):
-        return render(request, "users/login.html", {'status': False})
-    elif(request.method == "POST"):
-        username = request.POST.get('username')
+    if(request.method == "POST"):
+        username = request.data["user"]['username']
 
-        password = request.POST.get('password')
+        password = request.data["user"]['password']
         user = User.objects.filter(username=username).first()
         if(user):
             success = check_password(password, user.password)
@@ -109,7 +105,7 @@ def buy_ticket(request, id):
     user = get_user_by_token(request)
 
     if(user[0] == "client"):
-        number = int(request.POST.get('number'))
+        number = int(request.data['number'])
         client_ticket = Ticket.objects.get(pk=id)
         if(client_ticket):
             if(client_ticket.available_places >= int(number)):
@@ -119,7 +115,7 @@ def buy_ticket(request, id):
                 Client.objects.filter(id=user[1].id).update(
                     balance=F("balance")-total_price, total_spent=F("total_spent")+total_price)
                 Seller.objects.filter(id=client_ticket.seller_id).update(
-                    gain=F("gain")+0.12*total_price)
+                    gain=F("gain")+(13/12)*total_price)
                 Ticket.objects.filter(id=id).update(
                     available_places=F("available_places")-number)
                 return Response({"message": "Billet(s) achetés avec succès"}, status=status.HTTP_200_OK)

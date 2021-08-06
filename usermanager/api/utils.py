@@ -16,22 +16,21 @@ def password_validator(password: str):
 
 
 def user_form_validation(request):
+    date = request.data['user_form']['date']
 
-    date = request.POST.get('date')
-
-    nom = request.POST.get('nom')
-    prenom = request.POST.get('prenom')
-    username = request.POST.get('identifiant')
-    email = request.POST.get('email')
-    mot_de_passe = request.POST.get('mot_de_passe')
-    confirmation = request.POST.get("confirmation")
+    nom = request.data['user_form']['nom']
+    prenom = request.data['user_form']['prenom']
+    username = request.data['user_form']['identifiant']
+    email = request.data['user_form']['email']
+    mot_de_passe = request.data['user_form']['mot_de_passe']
+    confirmation = request.data['user_form']["confirmation"]
     if(nom and prenom and username and email and mot_de_passe and date):
         date_birth = [int(i) for i in date.split("/")]
 
         if(email_validator(email)):
             if(password_validator(mot_de_passe)):
                 if(mot_de_passe == confirmation):
-                    if(request.POST.get('profile') in ["seller", "client"]):
+                    if(request.data['user_form']['profile'] in ["seller", "client"]):
                         if(not User.objects.filter(username=username).first()):
                             return (True, {"nom": nom, "prenom": prenom, "username": username, "email": email, "mot_de_passe": mot_de_passe, "date_birth": date_birth})
                         return (False, "nom d'utilisateur déjà existant")
@@ -43,13 +42,13 @@ def user_form_validation(request):
 
 
 def ticket_form_validation(request):
-    origin = request.POST.get("origin")
-    destination = request.POST.get("destination")
-    time = request.POST.get("time")
-    total_places = request.POST.get("total_places")
-    available_places = request.POST.get("available_places")
-    price = request.POST.get("price")
-    date = request.POST.get("date")
+    origin = request.data['ticket_form']["origin"]
+    destination = request.data['ticket_form']["destination"]
+    time = request.data['ticket_form']["time"]
+    total_places = request.data['ticket_form']["total_places"]
+    available_places = request.data['ticket_form']["available_places"]
+    price = request.data['ticket_form']["price"]
+    date = request.data['ticket_form']["date"]
     if(origin and destination and price and total_places and available_places and time):
         date_birth = [int(i) for i in date.split("/")]
         if(total_places.isdigit() and available_places.isdigit()):
